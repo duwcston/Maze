@@ -12,7 +12,7 @@ This template has been updated for:
 - [React 18.3.1](https://github.com/facebook/react)
 - [Vite 5.3.1](https://github.com/vitejs/vite)
 
-![screenshot](screenshot.png)
+![screenshot](Maze.png)
 
 ## Requirements
 
