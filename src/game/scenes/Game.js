@@ -23,7 +23,7 @@ export class Game extends Scene {
         const tileset = map.addTilesetImage('tiles', null, 32, 32, 1, 2);
         const layer = map.createLayer(0, tileset, 0, 0);
         const player = this.physics.add.image(32 + 18, 32 + 16, 'player')
-            .setScale(0.03, 0.04)
+            .setScale(0.03, 0.03)
             .setCollideWorldBounds(true);
 
         const star1 = this.physics.add.image(1024 - 47, 32 + 15, 'star').setScale(0.5).setImmovable();
@@ -83,9 +83,9 @@ export class Game extends Scene {
             }
 
             if (this.count === 3) {
-                this.add.text(1024 / 2 - 130, 768 / 2 - 50, 'You Win!', { fontSize: '64px', fill: '#fff' });
-                this.add.text(1024 / 2 - 150, 768 / 2 + 50, 'Press R to restart', { fontSize: '32px', fill: '#fff' });
-                this.scene.pause();
+                this.pause = this.add.text(1024 / 2 - 130, 768 / 2 - 50, 'You Win!', { fontSize: '64px', fill: '#fff' });
+                // this.scene.pause();
+                this.restart = this.add.text(1024 / 2 - 150, 768 / 2 + 50, 'Press R to restart', { fontSize: '32px', fill: '#fff' });
             }
         }
 
@@ -97,7 +97,6 @@ export class Game extends Scene {
             player.angle = 180;
 
         });
-
 
         //  Right
         this.input.keyboard.on('keydown-D', event => {
@@ -123,7 +122,9 @@ export class Game extends Scene {
 
         this.input.keyboard.on('keydown-R', event => {
             this.scene.restart();
+            this.count = 0;
         });
+
         EventBus.emit('current-scene-ready', this);
     }
 }
