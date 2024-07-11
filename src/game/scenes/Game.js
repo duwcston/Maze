@@ -24,7 +24,8 @@ export class Game extends Scene {
         const layer = map.createLayer(0, tileset, 0, 0);
         const player = this.physics.add.image(32 + 18, 32 + 16, 'player')
             .setScale(0.03, 0.03)
-            .setCollideWorldBounds(true);
+            .setCollideWorldBounds(true)
+            .setSize(32, 32);
 
         const star1 = this.physics.add.image(1024 - 47, 32 + 15, 'star').setScale(0.5).setImmovable();
         const star2 = this.physics.add.image(32 + 16, 768 - 50, 'star').setScale(0.5).setImmovable();
