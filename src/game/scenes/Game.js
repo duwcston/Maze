@@ -47,8 +47,10 @@ export class Game extends Scene {
             if (tile.index !== 2) {
                 player.x += x;
                 player.y += y;
+                isMoving = true;
             }
             else {
+                isMoving = false;
                 direction = false;
             }
         }
