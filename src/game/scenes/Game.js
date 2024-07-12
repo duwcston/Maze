@@ -8,23 +8,13 @@ export class Game extends Scene {
         this.count = 0;
     }
 
-    preload() {
-        this.load.setPath('assets');
-
-        this.load.image('tiles', 'drawtiles-spaced.png')
-        this.load.image('player', 'cat.png')
-        this.load.image('star', 'star.png')
-        this.load.tilemapCSV('map', 'grid.csv')
-    }
-
     create() {
 
         const map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         const tileset = map.addTilesetImage('tiles', null, 32, 32, 1, 2);
         const layer = map.createLayer(0, tileset, 0, 0);
         const player = this.physics.add.image(32 + 18, 32 + 16, 'player')
-            .setScale(0.03, 0.03)
-            .setCollideWorldBounds(true)
+            .setScale(0.03)
             .setSize(32, 32);
 
         const star1 = this.physics.add.image(1024 - 47, 32 + 15, 'star').setScale(0.5).setImmovable();
@@ -40,48 +30,34 @@ export class Game extends Scene {
         let moveRight = false;
         let moveUp = false;
         let moveDown = false;
+        let isMoving = false;
+
+        const directions = {
+            moveLeft: { x: -32, y: 0 },
+            moveRight: { x: 32, y: 0 },
+            moveUp: { x: 0, y: -32 },
+            moveDown: { x: 0, y: 32 }
+        }
+
+        function movePlayer(direction) {
+            const { x, y } = directions[direction];
+            const tile = layer.getTileAtWorldXY(player.x + x, player.y + y, true);
+            // tile === 2 -> wall
+            // Check if the next tile is a wall
+            if (tile.index !== 2) {
+                player.x += x;
+                player.y += y;
+            }
+            else {
+                direction = false;
+            }
+        }
 
         this.update = function () {
-            if (moveLeft) {
-                const tile = layer.getTileAtWorldXY(player.x - 32, player.y, true);
-
-                if (tile.index !== 2) {
-                    player.x -= 32;
-                }
-                else {
-                    moveLeft = false;
-                }
-            }
-            if (moveRight) {
-                const tile = layer.getTileAtWorldXY(player.x + 32, player.y, true);
-
-                if (tile.index !== 2) {
-                    player.x += 32;
-                }
-                else {
-                    moveRight = false;
-                }
-            }
-            if (moveUp) {
-                const tile = layer.getTileAtWorldXY(player.x, player.y - 32, true);
-
-                if (tile.index !== 2) {
-                    player.y -= 32;
-                }
-                else {
-                    moveUp = false;
-                }
-            }
-            if (moveDown) {
-                const tile = layer.getTileAtWorldXY(player.x, player.y + 32, true);
-
-                if (tile.index !== 2) {
-                    player.y += 32;
-                }
-                else {
-                    moveDown = false;
-                }
-            }
+            if (moveLeft) movePlayer('moveLeft');
+            if (moveRight) movePlayer('moveRight');
+            if (moveUp) movePlayer('moveUp');
+            if (moveDown) movePlayer('moveDown');
 
             if (this.count === 3) {
                 this.pause = this.add.text(1024 / 2 - 130, 768 / 2 - 50, 'You Win!', { fontSize: '64px', fill: '#fff' });
@@ -90,37 +66,77 @@ export class Game extends Scene {
             }
         }
 
+        // Reset all the movement when a new key is pressed
+        const resetMovement = () => {
+            moveLeft = false;
+            moveRight = false;
+            moveUp = false;
+            moveDown = false;
+        }
+
+        // const keyCodes = {
+        //     'keydown-A': { move: 'moveLeft', angle: 180, flipY: true },
+        //     'keydown-D': { move: 'moveRight', angle: 0, flipY: false },
+        //     'keydown-W': { move: 'moveUp', angle: -90, flipY: false },
+        //     'keydown-S': { move: 'moveDown', angle: 90, flipY: false },
+        // };
+
+        // function handleKeyDown(key) {
+        //     if (!isMoving) {
+        //         resetMovement();
+        //         const { move, angle, flipY } = keyCodes[key];
+        //         move = true;
+        //         player.angle = angle;
+        //         player.flipY = flipY;
+        //     }
+        // }
+
+        // Object.keys(keyCodes).forEach(key => {
+        //     this.input.keyboard.on(key, () => handleKeyDown(key));
+        // });
+
+
         //  Left
-        // eslint-disable-next-line no-unused-vars
         this.input.keyboard.on('keydown-A', event => {
-
-            moveLeft = true;
-            player.angle = 180;
-
+            if (!isMoving) {
+                resetMovement();
+                moveLeft = true;
+                player.angle = 180;
+                player.flipY = true;
+            }
         });
 
         //  Right
         this.input.keyboard.on('keydown-D', event => {
-
-            moveRight = true;
-            player.angle = 0;
+            if (!isMoving) {
+                resetMovement();
+                moveRight = true;
+                player.angle = 0;
+                player.flipY = false;
+            }
         });
 
         //  Up
         this.input.keyboard.on('keydown-W', event => {
-
-            moveUp = true;
-            player.angle = -90;
+            if (!isMoving) {
+                resetMovement();
+                moveUp = true;
+                player.angle = -90;
+                // player.flipY = false;
+            }
         });
 
         //  Down
         this.input.keyboard.on('keydown-S', event => {
-
-            moveDown = true;
-            player.angle = 90;
-
+            if (!isMoving) {
+                resetMovement();
+                moveDown = true;
+                player.angle = 90;
+                // player.flipY = false;
+            }
         });
 
+        // Restart
         this.input.keyboard.on('keydown-R', event => {
             this.scene.restart();
             this.count = 0;
