@@ -6,144 +6,122 @@ export class Game extends Scene {
     constructor() {
         super('Game');
         this.count = 0;
-    }
-
-    create() {
-
-        const map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
-        const tileset = map.addTilesetImage('tiles', null, 32, 32, 1, 2);
-        const layer = map.createLayer(0, tileset, 0, 0);
-        const player = this.physics.add.image(32 + 18, 32 + 16, 'player')
-            .setScale(0.03)
-            .setSize(32, 32);
-
-        const star1 = this.physics.add.image(1024 - 47, 32 + 15, 'star').setScale(0.5).setImmovable();
-        const star2 = this.physics.add.image(32 + 16, 768 - 50, 'star').setScale(0.5).setImmovable();
-        const star3 = this.physics.add.image(1024 - 47, 768 - 50, 'star').setScale(0.5).setImmovable();
-
-        this.physics.add.overlap(player, [star1, star2, star3], (player, star) => {
-            star.destroy();
-            this.count += 1;
-        });
-
-        let moveLeft = false;
-        let moveRight = false;
-        let moveUp = false;
-        let moveDown = false;
-        let isMoving = false;
-
-        const directions = {
+        this.directions = {
             moveLeft: { x: -32, y: 0 },
             moveRight: { x: 32, y: 0 },
             moveUp: { x: 0, y: -32 },
             moveDown: { x: 0, y: 32 }
-        }
+        };
+        this.moveLeft = false;
+        this.moveRight = false;
+        this.moveUp = false;
+        this.moveDown = false;
+        this.isMoving = false;
+    }
 
-        function movePlayer(direction) {
-            const { x, y } = directions[direction];
-            const tile = layer.getTileAtWorldXY(player.x + x, player.y + y, true);
-            // tile === 2 -> wall
-            // Check if the next tile is a wall
-            if (tile.index !== 2) {
-                player.x += x;
-                player.y += y;
-                isMoving = true;
-            }
-            else {
-                isMoving = false;
-                direction = false;
-            }
-        }
+    create() {
+        const map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
+        const tileset = map.addTilesetImage('tiles', null, 32, 32, 1, 2);
+        this.layer = map.createLayer(0, tileset, 0, 0);
 
-        this.update = function () {
-            if (moveLeft) movePlayer('moveLeft');
-            if (moveRight) movePlayer('moveRight');
-            if (moveUp) movePlayer('moveUp');
-            if (moveDown) movePlayer('moveDown');
+        this.player = this.physics.add.image(32 + 18, 32 + 16, 'player')
+            .setScale(0.03)
+            .setSize(32, 32);
 
-            if (this.count === 3) {
-                this.pause = this.add.text(1024 / 2 - 130, 768 / 2 - 50, 'You Win!', { fontSize: '64px', fill: '#fff' });
-                // this.scene.pause();
-                this.restart = this.add.text(1024 / 2 - 150, 768 / 2 + 50, 'Press R to restart', { fontSize: '32px', fill: '#fff' });
-            }
-        }
+        this.stars = [
+            this.physics.add.image(1024 - 47, 32 + 15, 'star').setScale(0.5).setImmovable(),
+            this.physics.add.image(32 + 16, 768 - 50, 'star').setScale(0.5).setImmovable(),
+            this.physics.add.image(1024 - 47, 768 - 50, 'star').setScale(0.5).setImmovable()
+        ];
 
-        // Reset all the movement when a new key is pressed
-        const resetMovement = () => {
-            moveLeft = false;
-            moveRight = false;
-            moveUp = false;
-            moveDown = false;
-        }
-
-        // const keyCodes = {
-        //     'keydown-A': { move: 'moveLeft', angle: 180, flipY: true },
-        //     'keydown-D': { move: 'moveRight', angle: 0, flipY: false },
-        //     'keydown-W': { move: 'moveUp', angle: -90, flipY: false },
-        //     'keydown-S': { move: 'moveDown', angle: 90, flipY: false },
-        // };
-
-        // function handleKeyDown(key) {
-        //     if (!isMoving) {
-        //         resetMovement();
-        //         const { move, angle, flipY } = keyCodes[key];
-        //         move = true;
-        //         player.angle = angle;
-        //         player.flipY = flipY;
-        //     }
-        // }
-
-        // Object.keys(keyCodes).forEach(key => {
-        //     this.input.keyboard.on(key, () => handleKeyDown(key));
-        // });
-
-
-        //  Left
-        this.input.keyboard.on('keydown-A', event => {
-            if (!isMoving) {
-                resetMovement();
-                moveLeft = true;
-                player.angle = 180;
-                player.flipY = true;
-            }
-        });
-
-        //  Right
-        this.input.keyboard.on('keydown-D', event => {
-            if (!isMoving) {
-                resetMovement();
-                moveRight = true;
-                player.angle = 0;
-                player.flipY = false;
-            }
-        });
-
-        //  Up
-        this.input.keyboard.on('keydown-W', event => {
-            if (!isMoving) {
-                resetMovement();
-                moveUp = true;
-                player.angle = -90;
-                // player.flipY = false;
-            }
-        });
-
-        //  Down
-        this.input.keyboard.on('keydown-S', event => {
-            if (!isMoving) {
-                resetMovement();
-                moveDown = true;
-                player.angle = 90;
-                // player.flipY = false;
-            }
-        });
-
-        // Restart
-        this.input.keyboard.on('keydown-R', event => {
-            this.scene.restart();
-            this.count = 0;
-        });
-
+        this.setupCollisions();
+        this.setupInput();
         EventBus.emit('current-scene-ready', this);
+    }
+
+    update() {
+        if (this.moveLeft) this.movePlayer('moveLeft');
+        if (this.moveRight) this.movePlayer('moveRight');
+        if (this.moveUp) this.movePlayer('moveUp');
+        if (this.moveDown) this.movePlayer('moveDown');
+
+        if (this.count === 3) {
+            this.showWinMessage();
+        }
+    }
+
+    setupCollisions() {
+        this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
+    }
+
+    collectStar(player, star) {
+        star.destroy();
+        this.count += 1;
+    }
+
+    setupInput() {
+        this.input.keyboard.on('keydown-A', event => this.handleMovement('moveLeft', true));
+        this.input.keyboard.on('keydown-D', event => this.handleMovement('moveRight', true));
+        this.input.keyboard.on('keydown-W', event => this.handleMovement('moveUp', true));
+        this.input.keyboard.on('keydown-S', event => this.handleMovement('moveDown', true));
+        this.input.keyboard.on('keydown-R', this.restartScene, this);
+    }
+
+    handleMovement(direction, value) {
+        if (!this.isMoving) {
+            this.resetMovement();
+            this[direction] = value;
+            this.updatePlayerAngle(direction);
+        }
+    }
+
+    resetMovement() {
+        this.moveLeft = false;
+        this.moveRight = false;
+        this.moveUp = false;
+        this.moveDown = false;
+    }
+
+    updatePlayerAngle(direction) {
+        switch (direction) {
+            case 'moveLeft':
+                this.player.angle = 180;
+                this.player.flipY = true;
+                break;
+            case 'moveRight':
+                this.player.angle = 0;
+                this.player.flipY = false;
+                break;
+            case 'moveUp':
+                this.player.angle = -90;
+                break;
+            case 'moveDown':
+                this.player.angle = 90;
+                break;
+        }
+    }
+
+    movePlayer(direction) {
+        const { x, y } = this.directions[direction];
+        const tile = this.layer.getTileAtWorldXY(this.player.x + x, this.player.y + y, true);
+
+        if (tile.index !== 2) {
+            this.player.x += x;
+            this.player.y += y;
+            this.isMoving = true;
+        } else {
+            this.isMoving = false;
+            this[direction] = false;
+        }
+    }
+
+    showWinMessage() {
+        this.add.text(1024 / 2 - 130, 768 / 2 - 50, 'You Win!', { fontSize: '64px', fill: '#fff' });
+        this.add.text(1024 / 2 - 150, 768 / 2 + 50, 'Press R to restart', { fontSize: '32px', fill: '#fff' });
+    }
+
+    restartScene() {
+        this.scene.restart();
+        this.count = 0;
     }
 }
