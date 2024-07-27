@@ -43,7 +43,7 @@ export class Game extends Scene {
             yoyo: true,
             alpha: { from: 1, to: 0.1 },
             ease: 'Sine.easeInOut'
-        })
+        });
 
         const swipe = new Swipe(this, {
             swipeDetectedCallback: (direction) => {
@@ -152,7 +152,10 @@ export class Game extends Scene {
 
     showWinMessage() {
         this.add.text(1024 / 2 - 130, 768 / 2 - 50, 'You Win!', { fontSize: '64px', fill: '#fff' });
-        this.add.text(1024 / 2 - 150, 768 / 2 + 50, 'Press R to restart', { fontSize: '32px', fill: '#fff' });
+
+        const restartButton = this.add.text(1024 / 2 - 50, 768 / 2 + 50, 'Restart', { fontSize: '32px', fill: '#fff' })
+            .setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => this.restartScene());
     }
 
     restartScene() {
