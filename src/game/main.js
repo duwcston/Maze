@@ -1,15 +1,9 @@
 import { Game as MainGame } from './scenes/Game';
 import { AUTO, Game } from 'phaser';
 import { Preloader } from './scenes/Preloader';
+import { SIZE_HEIGHT_SCREEN, SIZE_WIDTH_SCREEN, MIN_SIZE_HEIGHT, MIN_SIZE_WIDTH, MAX_SIZE_HEIGHT, MAX_SIZE_WIDTH } from './utils/Constant.js';
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
-
-const MAX_SIZE_WIDTH = 1920;
-const MAX_SIZE_HEIGHT = 1080;
-const MIN_SIZE_WIDTH = 480;
-const MIN_SIZE_HEIGHT = 320;
-const SIZE_WIDTH_SCREEN = 1024;
-const SIZE_HEIGHT_SCREEN = 768;
 
 const config = {
     type: AUTO,
@@ -30,7 +24,7 @@ const config = {
         default: 'arcade',
         arcade: {
             gravity: { y: 0 },
-            debug: true,
+            debug: false,
         }
     },
     scene: [

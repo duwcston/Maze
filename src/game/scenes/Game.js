@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Scene } from 'phaser';
 import { EventBus } from '../EventBus';
+import { Swipe } from '../utils/Swipe';
 
 export class Game extends Scene {
     constructor() {
@@ -31,11 +32,45 @@ export class Game extends Scene {
         this.stars = [
             this.physics.add.image(1024 - 47, 32 + 15, 'star').setScale(0.5).setImmovable(),
             this.physics.add.image(32 + 16, 768 - 50, 'star').setScale(0.5).setImmovable(),
-            this.physics.add.image(1024 - 47, 768 - 50, 'star').setScale(0.5).setImmovable()
+            this.physics.add.image(1024 - 47, 768 - 50, 'star').setScale(0.5).setImmovable(),
+
         ];
 
-        this.setupCollisions();
+        this.tweens.add({
+            targets: this.stars,
+            duration: 500,
+            repeat: -1,
+            yoyo: true,
+            alpha: { from: 1, to: 0.1 },
+            ease: 'Sine.easeInOut'
+        })
+
+        const swipe = new Swipe(this, {
+            swipeDetectedCallback: (direction) => {
+                console.log(direction);
+                switch (direction) {
+                    case 'UP':
+                        this.handleMovement('moveUp', true);
+                        break;
+                    case 'DOWN':
+                        this.handleMovement('moveDown', true);
+                        break;
+                    case 'LEFT':
+                        this.handleMovement('moveLeft', true);
+                        break;
+                    case 'RIGHT':
+                        this.handleMovement('moveRight', true);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+
         this.setupInput();
+
+        this.setupCollisions();
+
         EventBus.emit('current-scene-ready', this);
     }
 
