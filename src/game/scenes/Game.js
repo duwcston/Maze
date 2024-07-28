@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { Scene } from 'phaser';
 import { EventBus } from '../EventBus';
-import { Swipe } from '../utils/Swipe';
+import { Swipe } from '../utils/Swipe.js';
 
 export class Game extends Scene {
     constructor() {
@@ -28,6 +28,8 @@ export class Game extends Scene {
         this.player = this.physics.add.image(32 + 18, 32 + 16, 'player')
             .setScale(0.03)
             .setSize(32, 32);
+
+        this.isMoving = false;
 
         this.stars = [
             this.physics.add.image(1024 - 47, 32 + 15, 'star').setScale(0.5).setImmovable(),
@@ -80,7 +82,7 @@ export class Game extends Scene {
         if (this.moveUp) this.movePlayer('moveUp');
         if (this.moveDown) this.movePlayer('moveDown');
 
-        if (this.count === 3) {
+        if (this.count === 0) {
             this.showWinMessage();
         }
     }
