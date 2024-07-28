@@ -82,7 +82,7 @@ export class Game extends Scene {
         if (this.moveUp) this.movePlayer('moveUp');
         if (this.moveDown) this.movePlayer('moveDown');
 
-        if (this.count === 0) {
+        if (this.count === 3) {
             this.showWinMessage();
         }
     }
